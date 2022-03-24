@@ -1,0 +1,33 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: www
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: agrowing
+    container_name: agrowing-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - agrowing
+
+  nginx:
+    image: nginx:alpine
+    container_name: agrowing-nginx
+    restart: unless-stopped
+    ports:
+      - 3010:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - agrowing
+
+networks:
+  agrowing:
+    driver: bridge
