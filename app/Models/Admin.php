@@ -24,4 +24,8 @@ class Admin extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function komoditas(){
+        return $this->hasMany(JenisKomoditas::class);
+    }
 }

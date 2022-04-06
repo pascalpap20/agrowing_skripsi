@@ -10,58 +10,173 @@ use App\Models\ProjectTanam;
 use App\Models\ItemPekerjaan;
 use App\Models\IndikatorKegiatan;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use App\Models\User;
+
+use Exception;
 
 class SopController extends Controller
 {
     //create sop
     function create(Request $request){
-        // $validator = Validator::make($request->all(), 
-        //       [ 
-        //          'sop_nama' => 'required',
-        //         // 'estimasi_panen' => 'required',
-        //         // 'deskripsi' => 'required', 
-        //         //'foto' => 'required|mimes:png,jpg,jpeg,gif|max:2048',
-        //      ]); 
+        $validator = Validator::make($request->all(), 
+            [ 
+                'estimasi_panen' => 'required',
+                'jenis_komoditas_id' => [
+                    'required',
+                    //check the id for table jenis_komoditas is actually exists based on the input
+                    Rule::exists('jenis_komoditas', 'id')->where('id', $request->input('jenis_komoditas_id')), 
+                ]
+            ],
+            [
+                'estimasi_panen.required' => 'estimasi_panen need to be decided',
+                'jenis_komoditas_id.required' => 'jenis_komoditas_id need to be selected',
+                'jenis_komoditas_id.exists' => 'jenis_komoditas is not available',
+                // 'detail_sop.*.kegiatan.*.indikator.tipe_jawaban_id.required' => 'tipe_jawaban_id is required',
+                // 'detail_sop.*.kegiatan.*.indikator.tipe_jawaban_id.exists' => 'tipe_jawaban_id not available'
+            ]
+        ); 
 
-        // if($validator->fails()) {          
-        //     return response()->json(['error'=>$validator->errors()], 400);                        
-        //  } 
+        if($validator->fails()) {          
+            return response()->json(['error'=>$validator->errors()], 400);                        
+         } 
 
-        // else{
-        $admin = Admin::find($request->admin_id);
-        $sop = $admin->sop()->firstOrCreate([
-            'sop_nama' => $request ->input ('sop_nama'),
-            'estimasi_panen' => $request ->input ('estimasi_panen'),
-            'deskripsi' => $request ->input ('deskripsi'),
-            'foto' => $request -> input('foto'),
-            //'foto' => $request -> file('foto')->store('public/images'),
-            'kalkulasi_waktu_panen' => $request ->input ('kalkulasi_waktu_panen'),
-            'kalkulasi_bobot_panen' => $request ->input ('kalkulasi_bobot_panen'),           
-            ]);
+        // check user == admin
+        $id = auth()->id();
+        $user = User::find($id);
+        
+        if($user["role_id"] == 2){
+            // $admin = Admin::find($request->admin_id);
+            try {
+                $admin = Admin::where('user_id', $user["id"])->first();
 
-        foreach ($request->kegiatan as $kegiatan) {
-            $item_pekerjaan = $sop->itemPekerjaan()->firstOrCreate([
-                'tahapan_sop_id' => $kegiatan["tahapan_sop_id"],
-                'nama_kegiatan' => $kegiatan["nama_kegiatan"],
-                'durasi_waktu' => $kegiatan["durasi_waktu"]
-            ]);
+                $sop = $admin->sop()->firstOrCreate([
+                    'estimasi_panen' => $request ->input ('estimasi_panen'),
+                    'deskripsi' => $request ->input ('deskripsi'),
+                    'foto' => $request -> input('foto'),
+                    'kalkulasi_waktu_panen' => $request ->input ('kalkulasi_waktu_panen'),
+                    'kalkulasi_bobot_panen' => $request ->input ('kalkulasi_bobot_panen'), 
+                    'jenis_komoditas_id' => $request->input('jenis_komoditas_id')          
+                    ]);
 
-            foreach($kegiatan["indikator"] as $indikator) {
-                $item_pekerjaan->indikatorKegiatan()->firstOrCreate([
-                    'nama_indikator' => $indikator["nama_indikator"],
-                    'tipe_jawaban_id' => $indikator["tipe_jawaban"]
+                foreach($request->detail_sop as $detail_sop){
+                    $tahapan = $sop->tahapan()->firstOrCreate([
+                        'nama_tahapan' => $detail_sop["nama_tahapan"],
+                        'sop_id' => $sop["id"],
+                        'admin_id' => $admin["id"]
+                    ]);
+
+                    foreach ($detail_sop["kegiatan"] as $kegiatan) {
+                        $item_pekerjaan = $sop->itemPekerjaan()->firstOrCreate([
+                            'tahapan_sop_id' => $tahapan["id"],
+                            'nama_kegiatan' => $kegiatan["nama_kegiatan"],
+                            'durasi_waktu' => $kegiatan["durasi_waktu"]
+                        ]);
+            
+                        foreach($kegiatan["indikator"] as $indikator) {
+                            $item_pekerjaan->indikatorKegiatan()->firstOrCreate([
+                                'nama_indikator' => $indikator["nama_indikator"],
+                                'tipe_jawaban_id' => $indikator["tipe_jawaban_id"]
+                            ]);
+                        }
+                    }
+                } 
+
+                return response()->json([
+                    "message" => "success",
+                    "success" => true,
+                    "data"  => $sop
+                ], 201);
+
+            } catch (Exception $e) {
+                return response()->json([
+                    "message" => "tipe_jawaban_id might not available, please check again",
+                    "success" => false
+                ], 400);        
+            }
+        }
+
+        return response()->json([
+            'message' => 'Unauthorized, make sure using admin account'
+        ]);
+    }
+
+    public function update(Request $request, $sop_id){
+        $validator = Validator::make($request->all(), 
+            [ 
+                'estimasi_panen' => 'required'
+            ],
+            [
+                'estimasi_panen.required' => 'estimasi_panen need to be decided'
+            ]
+        ); 
+
+        if($validator->fails()) {          
+            return response()->json(['error'=>$validator->errors()], 400);                        
+         } 
+
+        // check user == admin
+        $id = auth()->id();
+        $user = User::find($id);
+
+        if($user["role_id"] == 2){
+            try {
+                $sop = Sop::findOrFail($sop_id);
+                $sop->update([
+                    'estimasi_panen' => $request->input ('estimasi_panen'),
+                    'deskripsi' => $request->input ('deskripsi'),
+                    'foto' => $request-> input('foto'),
+                    'kalkulasi_waktu_panen' => $request ->input ('kalkulasi_waktu_panen'),
+                    'kalkulasi_bobot_panen' => $request ->input ('kalkulasi_bobot_panen'), 
+                    'jenis_komoditas_id' => $request->input('jenis_komoditas_id')          
+                ]);
+
+                return response()->json([
+                    "message" => "success",
+                    "success" => true,
+                    "data"  => $sop
+                ], 201);
+
+            } catch (Exception $e) {
+                return response()->json([
+                    "message" => "failed to update",
+                    "error" => $e->getMessage(),
+                    "success" => false
+                ], 400);        
+            }
+
+        }
+
+        return response()->json([
+            'message' => 'Unauthorized, make sure using admin account'
+        ]);
+    }
+
+    public function delete($sop_id){
+        $id = auth()->id();
+        $user = User::find($id);
+
+        if($user["role_id"] == 2){
+            try{
+                $sop = Sop::findOrFail($sop_id);
+                $sop->delete();
+                
+                return response()->json([
+                    "message" => "SOP " . $sop->id ." successfully deleted",
+                    "success" => true
+                ], 200);
+            } catch (Exception $e) {
+                return response()->json([
+                    "message" => "failed to delete",
+                    "error" => $e->getMessage(),
+                    "success" => false
                 ]);
             }
         }
 
-        return response()->json(
-            [
-                "message" => "success",
-                "status" => 200,
-                "data"  => $sop
-            ]
-        );
-    //    }
+        return response()->json([
+            'message' => 'Unauthorized, make sure using admin account'
+        ]);
     }
 
     function show($id){

@@ -10,7 +10,13 @@ class Sop extends Model
     use HasFactory;
     protected $table = 'sop'; 
     protected $fillable = [
-        'sop_nama', 'estimasi_panen', 'deskripsi', 'foto', 'kalkulasi_waktu_panen', 'kalkulasi_bobot_panen'
+        'sop_nama', 
+        'estimasi_panen', 
+        'deskripsi', 
+        'foto', 
+        'kalkulasi_waktu_panen', 
+        'kalkulasi_bobot_panen',
+        'jenis_komoditas_id'
     ];
 
     
@@ -24,5 +30,13 @@ class Sop extends Model
 
     public function projectTanam(){
         return $this-> hasMany(ProjectTanam::class);
+    }
+
+    public function komoditas(){
+        return $this->belongsTo(JenisKomoditas::class, 'jenis_komoditas_id');
+    }
+
+    public function tahapan(){
+        return $this->hasMany(Tahapan::class);
     }
 }

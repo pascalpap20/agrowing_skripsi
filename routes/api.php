@@ -37,22 +37,32 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/user', 'UserController@getUser');
     Route::post('/logout', 'UserController@logout');
 
-    Route::post('/sop', 'SopController@create');
     Route::get('/tahapan', 'SopController@tahapan');
-
+    
     Route::get('/project/{id}', 'ProjectTanamController@show');
     Route::get('/project', 'ProjectTanamController@showall');
-
+    
     Route::get('/lahan', 'ProjectTanamController@showLahan');
     Route::get('/lahan/{id}', 'ProjectTanamController@detailLahan');
-
+    
     Route::post('/project/create', 'ManagerKebunController@createProjectTanam');
     Route::post('/project/catat-harian', 'ManagerKebunController@catatHarianSop');
     Route::post('/project/catat-harian/panen', 'ManagerKebunController@catatHarianPanen');
-
+    
     Route::get('/laporan', 'AdminController@laporanHarian');
     Route::get('/project/catat-harian/search', 'AdminController@searchLaporan');
     Route::get('/project/catat-harian/{catat_harian_id}', 'ManagerKebunController@showCatatHarian');
 
     Route::get('/tipe-jawaban', 'TipeJawabanController@index');
+    
+    Route::post('/komoditas', 'KomoditasController@create');
+    Route::put('/komoditas/{komoditas_id}', 'KomoditasController@update');
+    Route::delete('/komoditas/{komoditas_id}', 'KomoditasController@delete');
+    Route::post('/sop', 'SopController@create');
+    Route::put('/sop/{sop_id}', 'SopController@update');
+    Route::delete('/sop/{sop_id}', 'SopController@delete');
+    
 });
+
+Route::get('/komoditas', 'KomoditasController@getJenisKomoditas');
+Route::get('/komoditas/{komoditas_id}', 'KomoditasController@getJenisKomoditasById');
