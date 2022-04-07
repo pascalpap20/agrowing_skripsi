@@ -61,8 +61,11 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/sop', 'SopController@create');
     Route::put('/sop/{sop_id}', 'SopController@update');
     Route::delete('/sop/{sop_id}', 'SopController@delete');
+    Route::put('/sop-all/{sop_id}', 'SopController@updateAll');
     
 });
 
 Route::get('/komoditas', 'KomoditasController@getJenisKomoditas');
 Route::get('/komoditas/{komoditas_id}', 'KomoditasController@getJenisKomoditasById');
+
+Route::get('/ucup', 'SopController@testing');
