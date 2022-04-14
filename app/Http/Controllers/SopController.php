@@ -54,7 +54,7 @@ class SopController extends Controller
                 $sop = $admin->sop()->firstOrCreate([
                     'estimasi_panen' => $request ->input ('estimasi_panen'),
                     'deskripsi' => $request ->input ('deskripsi'),
-                    'foto' => $request -> input('foto'),
+                    // 'foto' => $request -> input('foto'),
                     'kalkulasi_waktu_panen' => $request ->input ('kalkulasi_waktu_panen'),
                     'kalkulasi_bobot_panen' => $request ->input ('kalkulasi_bobot_panen'), 
                     'jenis_komoditas_id' => $request->input('jenis_komoditas_id')          
