@@ -12,6 +12,7 @@ use App\Models\IndikatorKegiatan;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Models\User;
+use App\Models\JenisKomoditas;
 
 use Exception;
 
@@ -98,7 +99,7 @@ class SopController extends Controller
 
         return response()->json([
             'message' => 'Unauthorized, make sure using admin account'
-        ]);
+        ], 401);
     }
 
     public function update(Request $request, $sop_id){
@@ -125,7 +126,7 @@ class SopController extends Controller
                 $sop->update([
                     'estimasi_panen' => $request->input ('estimasi_panen'),
                     'deskripsi' => $request->input ('deskripsi'),
-                    'foto' => $request-> input('foto'),
+                    // 'foto' => $request-> input('foto'),
                     'kalkulasi_waktu_panen' => $request ->input ('kalkulasi_waktu_panen'),
                     'kalkulasi_bobot_panen' => $request ->input ('kalkulasi_bobot_panen'), 
                     'jenis_komoditas_id' => $request->input('jenis_komoditas_id')          
@@ -149,7 +150,7 @@ class SopController extends Controller
 
         return response()->json([
             'message' => 'Unauthorized, make sure using admin account'
-        ]);
+        ], 401);
     }
 
     public function delete($sop_id){
@@ -176,7 +177,7 @@ class SopController extends Controller
 
         return response()->json([
             'message' => 'Unauthorized, make sure using admin account'
-        ]);
+        ], 401);
     }
 
     function show($id){
@@ -199,13 +200,22 @@ class SopController extends Controller
             ]);
     }
 
-    function allSop(){
+    function allSop(Request $request){
         $sop = Sop::all();
+        $nama_komoditas = $request->query('komoditas');
+
+        if($nama_komoditas){
+            $sop_komoditas = JenisKomoditas::where(strtolower('nama_komoditas'), strtolower($nama_komoditas))->first();
+            $sop_komoditas = Sop::where('jenis_komoditas_id', $sop_komoditas->id)->get();
+            return response()->json([
+                "sop" => $sop_komoditas
+            ], 200);
+        }
 
         return response()->json(
             [
                 'sop'=> $sop
-            ]
+            ], 200
             );
     }
 
@@ -254,7 +264,7 @@ class SopController extends Controller
                 $sop->update([
                     'estimasi_panen' => $request->input ('estimasi_panen'),
                     'deskripsi' => $request->input ('deskripsi'),
-                    'foto' => $request-> input('foto'),
+                    // 'foto' => $request-> input('foto'),
                     'kalkulasi_waktu_panen' => $request ->input ('kalkulasi_waktu_panen'),
                     'kalkulasi_bobot_panen' => $request ->input ('kalkulasi_bobot_panen'), 
                     'jenis_komoditas_id' => $request->input('jenis_komoditas_id')  
@@ -316,6 +326,7 @@ class SopController extends Controller
 
         return response()->json([
             'message' => 'Unauthorized, make sure using admin account'
-        ]);
+        ], 401);
     }
+
 }

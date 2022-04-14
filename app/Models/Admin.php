@@ -28,4 +28,8 @@ class Admin extends Model
     public function komoditas(){
         return $this->hasMany(JenisKomoditas::class);
     }
+
+    public function tahapan(){
+        return $this->hasMany(Tahapan::class);
+    }
 }

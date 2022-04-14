@@ -13,7 +13,7 @@ class ItemPekerjaan extends Model
     protected $table = 'item_pekerjaan'; 
     public $timestamps = false;
     protected $fillable = [
-        'tahapan_sop_id','nama_kegiatan', 'durasi_waktu',
+        'tahapan_sop_id','nama_kegiatan', 'durasi_waktu','sop_id'
     ];
 
 
@@ -21,7 +21,7 @@ class ItemPekerjaan extends Model
         return $this-> belongsTo(Sop::class, 'sop_id' );
     }
 
-    public function tahapan_sop(){
+    public function tahapan(){
         return $this-> belongsTo(Tahapan::class, 'tahapan_sop_id');
     }
 

@@ -16,7 +16,7 @@ class Tahapan extends Model
         'admin_id'
     ];
     public function itemPekerjaan(){
-        return $this-> hasMany(ItemPekerjaan::class);
+        return $this-> hasMany(ItemPekerjaan::class, 'tahapan_sop_id');
     }
 
     public function catatHarian(){
@@ -25,5 +25,9 @@ class Tahapan extends Model
 
     public function sop(){
         return $this->belongsTo(Sop::class, 'sop_id');
+    }
+
+    public function admin(){
+        return $this->belongsTo(Admin::class, 'admin_id');
     }
 }

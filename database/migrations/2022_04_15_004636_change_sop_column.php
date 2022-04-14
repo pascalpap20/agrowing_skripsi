@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddTahapanSopIdRef extends Migration
+class ChangeSopColumn extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,9 @@ class AddTahapanSopIdRef extends Migration
      */
     public function up()
     {
-        Schema::table('project_tanam', function (Blueprint $table) {
+        Schema::table('sop', function (Blueprint $table) {
             //
-            // $table->unsignedBigInteger('tahapan_sop_id');
-            // $table->foreign('tahapan_sop_id')->references('id')->on('tahapan')->onDelete('cascade');
+            $table->dropColumn('foto');
         });
     }
 
@@ -27,8 +26,9 @@ class AddTahapanSopIdRef extends Migration
      */
     public function down()
     {
-        Schema::table('project_tanam', function (Blueprint $table) {
-            $table->dropColumn('tahapan_sop_id');
+        Schema::table('sop', function (Blueprint $table) {
+            //
+            $table->string('foto');
         });
     }
 }

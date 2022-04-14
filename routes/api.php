@@ -25,7 +25,7 @@ Route::get('/managerkebun', 'UserController@allManagerKebun');
 Route::get('/kota', 'UserController@listKota');
 Route::get('/sop', 'SopController@allSop');
 Route::get('/sop/{id}', 'SopController@show');
-Route::get('/sop/{id}/{tahapan_id}', 'SopController@showByTahapan');
+// Route::get('/sop/{id}/{tahapan_id}', 'SopController@showByTahapan');
 
 
 Route::post('/admin/create', 'UserController@createAdmin');
@@ -55,17 +55,36 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::get('/tipe-jawaban', 'TipeJawabanController@index');
     
+    // -----------------------NEW FEATURES FROM HERE-------------------------------- \\
     Route::post('/komoditas', 'KomoditasController@create');
     Route::put('/komoditas/{komoditas_id}', 'KomoditasController@update');
     Route::delete('/komoditas/{komoditas_id}', 'KomoditasController@delete');
+    
     Route::post('/sop', 'SopController@create');
     Route::put('/sop/{sop_id}', 'SopController@update');
     Route::delete('/sop/{sop_id}', 'SopController@delete');
     Route::put('/sop-all/{sop_id}', 'SopController@updateAll');
     
+    Route::post('/sop/{sop_id}/tahapan', 'TahapanController@create');   
+    Route::put('/sop/{sop_id}/tahapan/{tahapan_id}', 'TahapanController@update');   
+    Route::delete('/sop/{sop_id}/tahapan/{tahapan_id}', 'TahapanController@delete');   
+    
+    Route::post('/sop/{sop_id}/kegiatan', 'ItemPekerjaanController@addKegiatan');   
+    Route::put('/sop/{sop_id}/kegiatan/{kegiatan_id}', 'ItemPekerjaanController@updateKegiatan');   
+    Route::delete('/sop/{sop_id}/kegiatan/{kegiatan_id}', 'ItemPekerjaanController@deleteKegiatan');
+    
+    Route::post('/kegiatan/{kegiatan_id}/indikator', 'ItemPekerjaanController@addIndikator');   
+    Route::put('/kegiatan/{kegiatan_id}/indikator/{indikator_id}', 'ItemPekerjaanController@updateIndikator');   
+    Route::delete('/kegiatan/{kegiatan_id}/indikator/{indikator_id}', 'ItemPekerjaanController@deleteIndikator');   
+    
 });
 
 Route::get('/komoditas', 'KomoditasController@getJenisKomoditas');
 Route::get('/komoditas/{komoditas_id}', 'KomoditasController@getJenisKomoditasById');
+
+Route::get('/sop/{sop_id}/tahapan', 'TahapanController@getTahapanBySopId');  
+
+Route::get('/sop/{sop_id}/kegiatan', 'ItemPekerjaanController@getKegiatanBySop');
+Route::get('/sop/{sop_id}/kegiatan/{kegiatan_id}', 'ItemPekerjaanController@getKegiatanById');
 
 Route::get('/ucup', 'SopController@testing');
