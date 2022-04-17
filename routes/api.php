@@ -45,7 +45,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/lahan', 'ProjectTanamController@showLahan');
     Route::get('/lahan/{id}', 'ProjectTanamController@detailLahan');
     
-    Route::post('/project/create', 'ManagerKebunController@createProjectTanam');
+    Route::post('/project/create', 'ManagerKebunController@createProjectTanam')->middleware('role_manager');
     Route::post('/project/catat-harian', 'ManagerKebunController@catatHarianSop');
     Route::post('/project/catat-harian/panen', 'ManagerKebunController@catatHarianPanen');
     

@@ -12,6 +12,8 @@ use App\Models\Alamat;
 use App\Models\BlokLahan;
 use Error;
 use Illuminate\Support\Facades\DB;
+use Validator;
+use Illuminate\Validation\Rule;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -20,9 +22,27 @@ class ManagerKebunController extends Controller
     //create project tanam
     function createProjectTanam(Request $request)
     {
-        $managerKebun = ManagerKebun::find($request->manager_kebun_id);
-        //$alamat = Alamat::find($request->alamat_id);
+        $validator = Validator::make($request->all(), 
+            [ 
+                'sop_id' => [
+                    'required',
+                    //check the id for table sop is actually exists based on the input
+                    Rule::exists('sop', 'id')->where('id', $request->input('sop_id')), 
+                ],
+                'regencies_id' => [
+                    'required',
+                    Rule::exists('regencies', 'id')->where('id', $request->input('regencies_id')), 
+                ]
+            ]
+        ); 
 
+        if($validator->fails()) {          
+            return response()->json(['error'=>$validator->errors()], 400);                        
+        } 
+
+        $managerKebun = ManagerKebun::where('user_id', auth()->user()->id)->firstOrFail();
+        
+  
         DB::transaction(function () use ($request, $managerKebun) {
             $alamat = Alamat::firstOrCreate([
                 'alamat' => $request->input('alamat'),
