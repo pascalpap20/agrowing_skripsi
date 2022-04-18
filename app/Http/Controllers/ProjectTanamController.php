@@ -11,6 +11,8 @@ use App\Models\ProjectTanam;
 use App\Models\Sop;
 use App\Models\Tahapan;
 use App\Models\Regency;
+use App\Models\BlokLahan;
+use Exception;
 
 class ProjectTanamController extends Controller
 {
@@ -100,5 +102,83 @@ class ProjectTanamController extends Controller
                 'sop' => $sop //->where('tahapan_sop_id', '=', $projectTanam[0]->tahapan_sop_id)
             ]
         );
+    }
+
+    public function deleteProjectTanam($project_id){
+        try {
+            $project = ProjectTanam::findOrFail($project_id);
+            $project->delete();
+
+            return response()->json([
+                "message" => "successfully delete project tanam id {$project->id}",
+                "success" => true
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+                "success" => false
+            ], 400);
+        }
+    }
+
+    public function addBlokLahan(Request $request, $project_id){
+        try {
+            $project = ProjectTanam::findOrFail($project_id);
+            $project->blokLahan()->create([
+                "luas_blok" => $request->input('luas_blok'),
+                "periode" => $request->input('periode'),
+                "jumlah_tanaman" => $request->input('jumlah_tanaman'),
+                "umur_tanaman" => $request->input('umur_tanaman')
+            ]);
+
+            return response()->json([
+                "message" => "successfully added new blok lahan to project tanam id {$project->id}",
+                "status" => true
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+                "success" => false
+            ], 400);
+        }
+    }
+
+    public function updateBlokLahan(Request $request, $project_id, $blok_id){
+        try {
+            $blok = BlokLahan::where('id', $blok_id)->where('project_tanam_id', $project_id)->firstOrFail();
+            $blok->update([
+                "luas_blok" => $request->input('luas_blok'),
+                "periode" => $request->input('periode'),
+                "jumlah_tanaman" => $request->input('jumlah_tanaman'),
+                "umur_tanaman" => $request->input('umur_tanaman')
+            ]);
+
+            return response()->json([
+                "message" => "successfully added new blok lahan to project tanam id {$project_id}",
+                "status" => true
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+                "success" => false
+            ], 400);
+        }
+    }
+
+    public function deleteBlokLahan($project_id, $blok_id){
+        try {
+            $blok = BlokLahan::where('id', $blok_id)->where('project_tanam_id', $project_id)->firstOrFail();
+            $blok->delete();
+
+            return response()->json([
+                "message" => "successfully delete blok lahan from project tanam id {$project_id}",
+                "status" => true
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+                "success" => false
+            ], 400);
+        }
     }
 }

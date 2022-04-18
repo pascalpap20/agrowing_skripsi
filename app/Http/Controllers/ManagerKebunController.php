@@ -40,7 +40,7 @@ class ManagerKebunController extends Controller
             return response()->json(['error'=>$validator->errors()], 400);                        
         } 
 
-        $managerKebun = ManagerKebun::where('user_id', auth()->user()->id)->firstOrFail();
+        $managerKebun = ManagerKebun::where('user_id', auth()->user()->id)->first();
         
   
         DB::transaction(function () use ($request, $managerKebun) {
@@ -59,7 +59,8 @@ class ManagerKebunController extends Controller
                     'luas_blok' => $blok['luas_blok'],
                     'jumlah_tanaman' => $blok['jumlah_tanaman'],
                     'umur_tanaman' => $blok['umur_tanaman'],
-                    'tahapan_id' => $blok['tahapan_id']
+                    'periode' => $blok['periode']
+                    // 'tahapan_id' => $blok['tahapan_id']
                 ]);
             }
         });

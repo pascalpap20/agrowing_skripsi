@@ -28,4 +28,8 @@ class ItemPekerjaan extends Model
     public function indikatorKegiatan(){
         return $this-> hasMany(IndikatorKegiatan::class);
     }
+
+    public function catatItem(){
+        return $this-> hasMany(CatatItem::class);
+    }
 }

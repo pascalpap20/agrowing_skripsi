@@ -11,7 +11,7 @@ class CatatItem extends Model
     public $timestamps = false;
     protected $table = 'catat_item';
     protected $fillable = [
-        'catat_harian_id', 'item_pekerjaan', 'filled'
+        'catat_harian_id', 'item_pekerjaan_id', 'filled'
     ];
 
     public function catatHarian(){
@@ -20,5 +20,9 @@ class CatatItem extends Model
 
     public function catatIndikator(){
         return $this-> hasMany(CatatIndikator::class);
+    }
+
+    public function itemPekerjaan(){
+        return $this->belongsTo(ItemPekerjaan::class, 'item_pekerjaan_id');
     }
 }

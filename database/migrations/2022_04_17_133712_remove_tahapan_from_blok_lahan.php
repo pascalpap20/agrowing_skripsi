@@ -15,6 +15,8 @@ class RemoveTahapanFromBlokLahan extends Migration
     {
         Schema::table('blok_lahan', function (Blueprint $table) {
             //
+            $table->dropForeign(['tahapan_id']);
+            $table->dropColumn('tahapan_id');
         });
     }
 
@@ -27,6 +29,8 @@ class RemoveTahapanFromBlokLahan extends Migration
     {
         Schema::table('blok_lahan', function (Blueprint $table) {
             //
+            $table->unsignedBigInteger('tahapan_id');
+            $table->foreign('tahapan_id')->references('id')->on('tahapan');
         });
     }
 }
