@@ -13,7 +13,7 @@ class BlokLahan extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'luas_blok', 'periode', 'jumlah_tanaman', 'umur_tanaman', 'tahapan_id'
+        'luas_blok', 'periode', 'jumlah_tanaman', 'umur_tanaman', 'tahapan_id', 'status'
     ];
 
 

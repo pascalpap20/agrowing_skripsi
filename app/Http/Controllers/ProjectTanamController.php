@@ -12,6 +12,7 @@ use App\Models\Sop;
 use App\Models\Tahapan;
 use App\Models\Regency;
 use App\Models\BlokLahan;
+use App\Models\User;
 use Exception;
 
 class ProjectTanamController extends Controller
@@ -30,11 +31,20 @@ class ProjectTanamController extends Controller
 
     function showall()
     {
-
-        $projectTanam = ProjectTanam::with(['alamat', 'blokLahan', 'sop', 'alamat.regency.province', 'tahapanSop', 'alamat.regency' => function ($query) {
-            $query->select('id', 'name');
-        }])->get();
-
+        $user = User::findOrFail(auth()->user()->id);
+        $manager_kebun = $user->managerKebun()->firstOrFail();
+        $projectTanam = ProjectTanam::where('manager_kebun_id', $manager_kebun->id)
+            ->with(['alamat', 'blokLahan', 'sop', 'alamat.regency.province', 'alamat.regency' => function ($query) {
+                $query->select('id', 'name');
+            }])->get();
+        
+        if($projectTanam->isEmpty()){
+            return response()->json(
+                [
+                    'data' => 'Tidak ada data'
+                ]
+            );
+        }
         return response()->json(
             [
                 'data' => $projectTanam
@@ -57,7 +67,7 @@ class ProjectTanamController extends Controller
             //dd($sop_id);
             $sop = Sop::find($sop_id);                          //get id dari database
             $manager = ManagerKebun::find($manager_kebun_id);
-            $tahapan = Tahapan::find($tahapan_id);
+            // $tahapan = Tahapan::find($tahapan_id);
 
             array_push($res, [
                 'id' => $item->id,
@@ -65,7 +75,7 @@ class ProjectTanamController extends Controller
                 'no_hp' => $manager->no_hp,
                 'lokasi_lahan' => $item->alamat->alamat,
                 'nama_buah' => $sop->sop_nama,
-                'tahapan' => $tahapan->nama_tahapan
+                // 'tahapan' => $tahapan->nama_tahapan
 
             ]);
         }
@@ -150,7 +160,8 @@ class ProjectTanamController extends Controller
                 "luas_blok" => $request->input('luas_blok'),
                 "periode" => $request->input('periode'),
                 "jumlah_tanaman" => $request->input('jumlah_tanaman'),
-                "umur_tanaman" => $request->input('umur_tanaman')
+                "umur_tanaman" => $request->input('umur_tanaman'),
+                "status" => $request->input('status')
             ]);
 
             return response()->json([
@@ -174,6 +185,23 @@ class ProjectTanamController extends Controller
                 "message" => "successfully delete blok lahan from project tanam id {$project_id}",
                 "status" => true
             ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+                "success" => false
+            ], 400);
+        }
+    }
+
+    public function getBlokLahan($project_id){
+        try {
+            $blok = BlokLahan::where('project_tanam_id', $project_id)->get();
+
+            return response()->json([
+                "message" => "successfully get blok lahan from project tanam id {$project_id}",
+                "status" => true,
+                "data" => $blok
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 "message" => $e->getMessage(),

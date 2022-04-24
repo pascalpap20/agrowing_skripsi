@@ -13,6 +13,7 @@ use App\Models\Tahapan;
 use App\Models\ProjectTanam;
 use App\Models\ItemPekerjaan;
 use App\Models\IndikatorKegiatan;
+use App\Models\User;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -45,6 +46,18 @@ class PencatatanController extends Controller
                 'tahapan_id' => $tahapan->id,
                 'catatan' => $request->input('catatan')
             ]);
+
+            if ($request->input('panen') == true) {
+                $catat_panen = $catat_harian->catatPanen()->firstOrCreate([
+                    'panen_aktual' => $request->input('panen_aktual'),
+                    'panen_gradeA' => $request->input('panen_gradeA'),
+                    'panen_gradeB' => $request->input('panen_gradeB')
+                ]);
+
+                $blok->update([
+                    'status' => 'selesai'
+                ]);
+            }
             foreach ($request->kegiatan as $kegiatan) {
                 $item_pekerjaan = ItemPekerjaan::where('id', $kegiatan["item_pekerjaan_id"])
                                                 ->where('tahapan_sop_id', $tahapan->id)->firstOrFail();
@@ -62,16 +75,17 @@ class PencatatanController extends Controller
                         $catat_item_pekerjaan->catatIndikator()->firstOrCreate([
                             'indikator_id' => $indikator_kegiatan->id,
                             'catat_jawaban' => $indikator["catat_jawaban"]
-                    ]);
+                        ]);
+                    }   
                 }
             }
-        }
-        DB::commit();
 
-        return response()->json([
-            "message" => "successfully create catat harian for blok {$blok->id}",
-            "success" => true,
-        ], 200);
+            DB::commit();
+
+            return response()->json([
+                "message" => "successfully create catat harian for blok {$blok->id}",
+                "success" => true,
+            ], 200);
 
         } catch (Exception $e) {
             DB::rollback();
@@ -217,4 +231,59 @@ class PencatatanController extends Controller
             ], 400);
         }
     }
+
+    // laravel get CatatanHarian model with relations where blok_id = $blok_id
+    public function getCatatanHarian($blok_id){
+        try {
+            $blok = BlokLahan::findOrFail($blok_id);
+            $catatan_harian = $blok->catatHarian()->with(['tahapan:id,nama_tahapan', 'catatItem.itemPekerjaan','catatItem.catatIndikator', 'catatItem.catatIndikator.indikator'])->get();
+            return response()->json([
+                "message" => "successfully get catatan harian for blok id {$blok_id}",
+                "success" => true,
+                "data" => $catatan_harian
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+                "success" => false,
+            ], 400);
+        }
+    }
+    
+    // laravel get CatatanHarian model with relations where blok_id = $blok_id and catatan_harian_id = $catatan_harian_id
+    public function getCatatanHarianById($blok_id, $catatan_harian_id){
+        try {
+            $blok = BlokLahan::findOrFail($blok_id);
+            $catatan_harian = $blok->catatHarian()
+                            ->with(['tahapan:id,nama_tahapan', 'catatItem.itemPekerjaan','catatItem.catatIndikator', 'catatItem.catatIndikator.indikator'])
+                            ->findOrFail($catatan_harian_id);
+            return response()->json([
+                "message" => "successfully get catatan harian for blok id {$blok_id} and catatan harian id {$catatan_harian_id}",
+                "success" => true,
+                "data" => $catatan_harian
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage(),
+                "success" => false,
+            ], 400);
+        }
+    }
+    
+    public function showNotifikasi() {
+        $user = User::findOrFail(auth()->user()->id);
+        $manager_kebun = $user->managerKebun()->firstOrFail();
+        $kegiatan_belum_dikerjakan = ProjectTanam::where('manager_kebun_id', $manager_kebun->id)
+                         ->with(['blokLahan.catatHarian.catatItem' => function ($query){
+                            $query->where('filled', 0);
+                        }])->get();
+        
+        return response()->json([
+            "message" => "successfully get notifikasi",
+            "success" => true,
+            "manager_kebun" => $manager_kebun,
+            "data" => $kegiatan_belum_dikerjakan
+        ], 200);
+    }
+
 }

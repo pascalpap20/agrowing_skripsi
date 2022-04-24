@@ -130,12 +130,10 @@ class ManagerKebunController extends Controller
 
         $status = $request->status;
 
-
-
         return response()->json([
             "message" => "berhasil mencatat harian",
             "status" => 200,
-            "blok status" => $status
+            "blok status" => $catatHarian
         ]);
     }
 

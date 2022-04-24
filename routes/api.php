@@ -40,7 +40,6 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/tahapan', 'SopController@tahapan');
     
     Route::get('/project/{id}', 'ProjectTanamController@show');
-    Route::get('/project', 'ProjectTanamController@showall');
     
     Route::get('/lahan', 'ProjectTanamController@showLahan');
     Route::get('/lahan/{id}', 'ProjectTanamController@detailLahan');
@@ -56,6 +55,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     
     // ---------------------------MODIFIED FEATURES-------------------------------\\
     Route::post('/project/create', 'ManagerKebunController@createProjectTanam')->middleware('role_manager');
+    Route::get('/project', 'ProjectTanamController@showall')->middleware('role_manager');
     
     // -----------------------NEW FEATURES FROM HERE-------------------------------- \\
     Route::post('/komoditas', 'KomoditasController@create');
@@ -84,7 +84,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/project/{project_id}/blok/create', 'ProjectTanamController@addBlokLahan')->middleware('role_manager');
     Route::put('/project/{project_id}/blok/{blok_id}', 'ProjectTanamController@updateBlokLahan')->middleware('role_manager');
     Route::delete('/project/{project_id}/blok/{blok_id}', 'ProjectTanamController@deleteBlokLahan')->middleware('role_manager');
-
+    Route::get('/project/{project_id}/blok', 'ProjectTanamController@getBlokLahan')->middleware('role_manager');
+    
     Route::post('/blok/{blok_id}/catat/create', 'PencatatanController@createCatatHarian')->middleware('role_manager');
     Route::delete('/blok/{blok_id}/catat/{catat_harian_id}', 'PencatatanController@deleteCatatHarian')->middleware('role_manager');
     Route::put('/blok/{blok_id}/catat/{catat_harian_id}', 'PencatatanController@updateCatatHarian')->middleware('role_manager');
@@ -94,6 +95,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('/catat/{catat_harian_id}/item/{catat_item_id}', 'PencatatanController@deleteCatatItem')->middleware('role_manager');
 
     Route::put('/item/{catat_item_id}/indikator/{indikator_id}', 'PencatatanController@updateCatatIndikator')->middleware('role_manager');
+
+    Route::get('/notifikasi', 'PencatatanController@showNotifikasi')->middleware('role_manager');
 });
 
 Route::get('/komoditas', 'KomoditasController@getJenisKomoditas');
@@ -103,5 +106,8 @@ Route::get('/sop/{sop_id}/tahapan', 'TahapanController@getTahapanBySopId');
 
 Route::get('/sop/{sop_id}/kegiatan', 'ItemPekerjaanController@getKegiatanBySop');
 Route::get('/sop/{sop_id}/kegiatan/{kegiatan_id}', 'ItemPekerjaanController@getKegiatanById');
+
+Route::get('/blok/{blok_id}/catat', 'PencatatanController@getCatatanHarian');
+Route::get('/blok/{blok_id}/catat/{catat_harian_id}', 'PencatatanController@getCatatanHarianById');
 
 Route::get('/ucup', 'SopController@testing');
