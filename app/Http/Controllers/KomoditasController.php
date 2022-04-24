@@ -8,7 +8,7 @@ use App\Models\Admin;
 use App\Models\JenisKomoditas;
 use Validator;
 use Exception;
-
+use Illuminate\Support\Facades\Storage;
 
 class KomoditasController extends Controller
 {
@@ -33,9 +33,13 @@ class KomoditasController extends Controller
                 return response()->json(['error'=>$validated->errors()], 400);                        
             } 
             
+            $fileName = null;
+            if($request->file('foto')){
+                $fileName = $request->file('foto')->store('komoditas');
+            }
             $komoditas = $admin->komoditas()->firstOrCreate([
                 'nama_komoditas' => $request->input('nama_komoditas'),
-                'foto' => $request->input('foto')
+                'foto' => $fileName
             ]);
 
             return response()->json([
@@ -55,29 +59,45 @@ class KomoditasController extends Controller
         $user = User::find($id);
         
         if($user["role_id"] == 2){
-            $validated = Validator::make(
-                $request->all(),
-                [
-                    'nama_komoditas' => 'required|unique:jenis_komoditas',
-                ],
-                [
-                    'nama_komoditas.required' => 'name is needed',
-                    'nama_komoditas.unique' => 'name is already created',
+            try {
+                $validated = Validator::make(
+                    $request->all(),
+                    [
+                        'nama_komoditas' => 'required',
+                    ],
+                    [
+                        'nama_komoditas.required' => 'name is needed',
+                    ]);
+
+                if($validated->fails()) {          
+                    return response()->json(['error'=>$validated->errors()], 400);                        
+                } 
+                
+                $updatedKomoditas = JenisKomoditas::where('id', $komoditas_id)->firstOrFail();
+                
+                $fileName = null;
+                if($request->file('foto')){
+                    if($updatedKomoditas["foto"]){
+                        Storage::delete($updatedKomoditas["foto"]);
+                    }
+                    $fileName = $request->file('foto')->store('komoditas');
+                }
+
+                $updatedKomoditas->update([
+                    'nama_komoditas' => $request->input('nama_komoditas'),
+                    'foto' => $fileName
                 ]);
 
-            if($validated->fails()) {          
-                return response()->json(['error'=>$validated->errors()], 400);                        
-            } 
-            
-            $updatedKomoditas = JenisKomoditas::where('id', $komoditas_id)->update([
-                'nama_komoditas' => $request->input('nama_komoditas'),
-                'foto' => $request->input('foto')
-            ]);
-
-            return response()->json([
-                'message' => 'komoditas ' . $request->input('nama_komoditas') . ' successfully updated',
-                'success' => true
-            ], 200); 
+                return response()->json([
+                    'message' => 'komoditas ' . $request->input('nama_komoditas') . ' successfully updated',
+                    'success' => true
+                ], 200); 
+            } catch (Exception $e) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'success' => false
+                ]);
+            }
         }
 
         return response()->json([
@@ -93,6 +113,9 @@ class KomoditasController extends Controller
             try {
 
                 $komoditas = JenisKomoditas::findOrFail($komoditas_id);
+                if($komoditas["foto"]){
+                    Storage::delete($komoditas["foto"]);
+                }
                 $komoditas->delete();
                 
                 return response()->json([
@@ -101,7 +124,7 @@ class KomoditasController extends Controller
                 ], 200); 
             } catch (Exception $e) {
                 return response()->json([
-                    'message' => $komoditas_id . ' is invalid id',
+                    'message' => $e->getMessage(),
                     'success' => false
                 ], 404); 
             }
