@@ -13,9 +13,12 @@ class ChangeSopColumn extends Migration
      */
     public function up()
     {
-        Schema::table('sop', function (Blueprint $table) {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+        Schema::table('sop', function (Blueprint $table) use ($driver) {
             //
-            $table->dropColumn('foto');
+            if($driver !== 'sqlite'){
+                $table->dropColumn('foto');
+            }
         });
     }
 

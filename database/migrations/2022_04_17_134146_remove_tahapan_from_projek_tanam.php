@@ -13,10 +13,13 @@ class RemoveTahapanFromProjekTanam extends Migration
      */
     public function up()
     {
-        Schema::table('project_tanam', function (Blueprint $table) {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+        Schema::table('project_tanam', function (Blueprint $table) use ($driver) {
             //
-            $table->dropForeign(['tahapan_sop_id']);
-            $table->dropColumn('tahapan_sop_id');
+            if($driver !== 'sqlite'){
+                $table->dropForeign(['tahapan_sop_id']);
+                $table->dropColumn('tahapan_sop_id');
+            }
         });
     }
 

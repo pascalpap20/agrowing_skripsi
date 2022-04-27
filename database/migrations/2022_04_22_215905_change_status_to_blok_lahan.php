@@ -13,9 +13,12 @@ class ChangeStatusToBlokLahan extends Migration
      */
     public function up()
     {
-        Schema::table('blok_lahan', function (Blueprint $table) {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+        Schema::table('blok_lahan', function (Blueprint $table) use ($driver){
             //
-            $table->string('status')->default('belum selesai')->change();
+            if($driver !== 'sqlite'){
+                $table->string('status')->default('belum selesai')->change();
+            }
         });
     }
 

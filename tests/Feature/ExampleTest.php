@@ -12,9 +12,12 @@ class ExampleTest extends TestCase
      *
      * @return void
      */
+    use RefreshDatabase;
+
     public function testBasicTest()
     {
-        $response = $this->get('/');
+        $this->withoutExceptionHandling();
+        $response = $this->get('/api/v1/komoditas');
 
         $response->assertStatus(200);
     }

@@ -13,14 +13,22 @@ class ChangeTahapanToBlokLahan extends Migration
      */
     public function up()
     {
-        Schema::table('blok_lahan', function (Blueprint $table) {
-            $table->unsignedBigInteger('tahapan_id');
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+
+        Schema::table('blok_lahan', function (Blueprint $table) use ($driver) {
+            if($driver === 'sqlite'){
+                $table->unsignedBigInteger('tahapan_id')->default('');
+            } else {
+                $table->unsignedBigInteger('tahapan_id');
+            }
             $table->foreign('tahapan_id')->references('id')->on('tahapan');
         });
 
-        Schema::table('project_tanam', function (Blueprint $table) {
-            $table->dropForeign(['tahapan_sop_id']);
-            $table->dropColumn(['tahapan_sop_id']);
+        Schema::table('project_tanam', function (Blueprint $table) use ($driver) {
+            if($driver !== 'sqlite'){
+                $table->dropForeign(['tahapan_sop_id']);
+                $table->dropColumn(['tahapan_sop_id']);
+            }
         });
     }
 

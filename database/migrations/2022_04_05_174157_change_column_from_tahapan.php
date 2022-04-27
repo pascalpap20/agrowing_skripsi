@@ -13,10 +13,16 @@ class ChangeColumnFromTahapan extends Migration
      */
     public function up()
     {
-        Schema::table('tahapan', function (Blueprint $table) {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+        Schema::table('tahapan', function (Blueprint $table) use ($driver) {
             //
-            $table->unsignedBigInteger('sop_id');
-            $table->unsignedBigInteger('admin_id');
+            if($driver === 'sqlite'){
+                $table->unsignedBigInteger('sop_id')->default('');
+                $table->unsignedBigInteger('admin_id')->default('');
+            } else {
+                $table->unsignedBigInteger('sop_id');
+                $table->unsignedBigInteger('admin_id');
+            }
             $table->foreign('sop_id')->references('id')->on('sop')->onDelete('cascade');
         });
     }

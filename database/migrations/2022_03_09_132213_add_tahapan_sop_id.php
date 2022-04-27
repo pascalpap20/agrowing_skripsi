@@ -13,9 +13,13 @@ class AddTahapanSopId extends Migration
      */
     public function up()
     {
-        Schema::table('project_tanam', function (Blueprint $table) {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+
+        Schema::table('project_tanam', function (Blueprint $table) use ($driver){
             //
-            $table->unsignedBigInteger('tahapan_sop_id');
+            if($driver !== 'sqlite'){
+                $table->unsignedBigInteger('tahapan_sop_id');
+            }
         });
     }
 

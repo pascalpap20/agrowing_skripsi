@@ -13,10 +13,15 @@ class ChangeTableCatatItem extends Migration
      */
     public function up()
     {
-        Schema::table('catat_item', function (Blueprint $table) {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+        Schema::table('catat_item', function (Blueprint $table) use ($driver) {
             //
             $table->dropColumn('item_pekerjaan');
-            $table->unsignedBigInteger('item_pekerjaan_id');
+            if ($driver === 'sqlite'){
+                $table->unsignedBigInteger('item_pekerjaan_id')->default('');
+            } else {
+                $table->unsignedBigInteger('item_pekerjaan_id');
+            }
             $table->foreign('item_pekerjaan_id')->references('id')->on('item_pekerjaan')->onDelete('cascade');
         });
     }

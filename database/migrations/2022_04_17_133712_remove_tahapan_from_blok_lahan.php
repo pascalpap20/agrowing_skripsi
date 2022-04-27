@@ -13,10 +13,13 @@ class RemoveTahapanFromBlokLahan extends Migration
      */
     public function up()
     {
-        Schema::table('blok_lahan', function (Blueprint $table) {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+        Schema::table('blok_lahan', function (Blueprint $table) use ($driver) {
             //
-            $table->dropForeign(['tahapan_id']);
-            $table->dropColumn('tahapan_id');
+            if($driver !== 'sqlite'){
+                $table->dropForeign(['tahapan_id']);
+                $table->dropColumn('tahapan_id');
+            }
         });
     }
 

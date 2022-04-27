@@ -51,7 +51,7 @@ class KomoditasController extends Controller
 
         return response()->json([
             'message' => 'Unauthorized, make sure using admin account'
-        ]);
+        ], 401);
     }
 
     public function update(Request $request, $komoditas_id){
@@ -67,6 +67,7 @@ class KomoditasController extends Controller
                     ],
                     [
                         'nama_komoditas.required' => 'name is needed',
+                        'nama_komoditas.unique' => 'name is already created',
                     ]);
 
                 if($validated->fails()) {          
@@ -102,7 +103,7 @@ class KomoditasController extends Controller
 
         return response()->json([
             'message' => 'Unauthorized, make sure using admin account'
-        ]);
+        ], 401);
     }
 
     public function delete($komoditas_id){
@@ -131,7 +132,7 @@ class KomoditasController extends Controller
         }      
         return response()->json([
             'message' => 'Unauthorized, make sure using admin account'
-        ]);
+        ], 401);
     }
 
     public function getJenisKomoditas(){

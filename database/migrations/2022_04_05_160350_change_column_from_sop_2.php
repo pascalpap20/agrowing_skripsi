@@ -13,9 +13,14 @@ class ChangeColumnFromSop2 extends Migration
      */
     public function up()
     {
-        Schema::table('sop', function (Blueprint $table) {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+        Schema::table('sop', function (Blueprint $table) use ($driver){
             //
-            $table->unsignedBigInteger('jenis_komoditas_id');
+            if($driver === 'sqlite'){
+                $table->unsignedBigInteger('jenis_komoditas_id')->default('');
+            } else {
+                $table->unsignedBigInteger('jenis_komoditas_id');
+            }
             $table->foreign('jenis_komoditas_id')->references('id')->on('jenis_komoditas')->onDelete('cascade');
         });
     }
