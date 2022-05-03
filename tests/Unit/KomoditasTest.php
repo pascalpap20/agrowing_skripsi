@@ -77,7 +77,7 @@ class KomoditasTest extends TestCase
         ])->assertStatus(200);
     }
 
-    public function test_update_komoditas_error()
+    public function test_update_komoditas_error_formdata()
     {
         $komoditas = $this->admin->komoditas()->firstOrCreate([
             'nama_komoditas' => 'Kelengkeng'
@@ -86,5 +86,59 @@ class KomoditasTest extends TestCase
         $response = $this->put('api/v1/komoditas/' . $komoditas->id, [
             'foto' => null 
         ])->assertStatus(400);
+    }
+
+    public function test_update_komoditas_error_not_found()
+    {
+        $komoditas = $this->admin->komoditas()->firstOrCreate([
+            'nama_komoditas' => 'Kelengkeng'
+        ]);
+
+        $response = $this->put('api/v1/komoditas/' . "1000000", [
+            'nama_komoditas' => 'Kelengkeng',
+            'foto' => null 
+        ])->assertStatus(404);
+    }
+
+    public function test_delete_komoditas()
+    {
+        $komoditas = $this->admin->komoditas()->firstOrCreate([
+            'nama_komoditas' => 'Kelengkeng'
+        ]);
+
+        $response = $this->delete('api/v1/komoditas/' . $komoditas->id)
+                        ->assertStatus(200);
+    }
+
+    public function test_delete_komoditas_error_not_found()
+    {
+        $response = $this->delete('api/v1/komoditas/' . "1000000")
+                        ->assertStatus(404);
+    }
+
+    public function test_get_komoditas()
+    {
+        $komoditas = $this->admin->komoditas()->firstOrCreate([
+            'nama_komoditas' => 'Kelengkeng'
+        ]);
+
+        $response = $this->get('api/v1/komoditas')
+                        ->assertStatus(200);
+    }
+
+    public function test_get_komoditas_by_id()
+    {
+        $komoditas = $this->admin->komoditas()->firstOrCreate([
+            'nama_komoditas' => 'Kelengkeng'
+        ]);
+
+        $response = $this->get('api/v1/komoditas/' . $komoditas->id)
+                        ->assertStatus(200);
+    }
+
+    public function test_get_komoditas_by_id_error_not_found()
+    {
+        $response = $this->get('api/v1/komoditas/' . "1000000")
+                        ->assertStatus(404);
     }
 }

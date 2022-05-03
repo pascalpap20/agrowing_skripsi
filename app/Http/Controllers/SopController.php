@@ -91,7 +91,7 @@ class SopController extends Controller
 
             } catch (Exception $e) {
                 return response()->json([
-                    "message" => "tipe_jawaban_id might not available, please check again",
+                    "message" => $e->getMessage(),
                     "success" => false
                 ], 400);        
             }
@@ -105,10 +105,17 @@ class SopController extends Controller
     public function update(Request $request, $sop_id){
         $validator = Validator::make($request->all(), 
             [ 
-                'estimasi_panen' => 'required'
+                'estimasi_panen' => 'required',
+                'jenis_komoditas_id' => [
+                    'required',
+                    //check the id for table jenis_komoditas is actually exists based on the input
+                    Rule::exists('jenis_komoditas', 'id')->where('id', $request->input('jenis_komoditas_id')), 
+                ]
             ],
             [
-                'estimasi_panen.required' => 'estimasi_panen need to be decided'
+                'estimasi_panen.required' => 'estimasi_panen need to be decided',
+                'jenis_komoditas_id.required' => 'jenis_komoditas_id need to be selected',
+                'jenis_komoditas_id.exists' => 'jenis_komoditas is not available',
             ]
         ); 
 
@@ -136,7 +143,7 @@ class SopController extends Controller
                     "message" => "success",
                     "success" => true,
                     "data"  => $sop
-                ], 201);
+                ], 200);
 
             } catch (Exception $e) {
                 return response()->json([
@@ -171,7 +178,7 @@ class SopController extends Controller
                     "message" => "failed to delete",
                     "error" => $e->getMessage(),
                     "success" => false
-                ]);
+                ], 400);
             }
         }
 
@@ -205,7 +212,7 @@ class SopController extends Controller
         $nama_komoditas = $request->query('komoditas');
 
         if($nama_komoditas){
-            $sop_komoditas = JenisKomoditas::where(strtolower('nama_komoditas'), strtolower($nama_komoditas))->first();
+            $sop_komoditas = JenisKomoditas::where('nama_komoditas', strtolower($nama_komoditas))->first();
             $sop_komoditas = Sop::where('jenis_komoditas_id', $sop_komoditas->id)->get();
             return response()->json([
                 "sop" => $sop_komoditas

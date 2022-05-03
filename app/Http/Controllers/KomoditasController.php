@@ -97,7 +97,7 @@ class KomoditasController extends Controller
                 return response()->json([
                     'message' => $e->getMessage(),
                     'success' => false
-                ]);
+                ], 404);
             }
         }
 

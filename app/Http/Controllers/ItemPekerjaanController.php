@@ -250,7 +250,7 @@ class ItemPekerjaanController extends Controller
                 return response()->json([
                     "message" => "successfully update indikator for kegiatan id {$kegiatan_id}, indikator id {$indikator_id}",
                     "success" => true
-                ], 201);
+                ], 200);
 
             } catch (Exception $e) {
                 return response()->json([
@@ -280,7 +280,7 @@ class ItemPekerjaanController extends Controller
                 return response()->json([
                     "message" => "successfully delete indikator for kegiatan id {$kegiatan_id}, indikator id {$indikator_id}",
                     "success" => true
-                ], 201);
+                ], 200);
 
             } catch (Exception $e) {
                 return response()->json([
