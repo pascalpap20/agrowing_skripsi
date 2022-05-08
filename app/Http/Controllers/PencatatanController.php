@@ -85,7 +85,7 @@ class PencatatanController extends Controller
             return response()->json([
                 "message" => "successfully create catat harian for blok {$blok->id}",
                 "success" => true,
-            ], 200);
+            ], 201);
 
         } catch (Exception $e) {
             DB::rollback();
@@ -118,13 +118,14 @@ class PencatatanController extends Controller
     public function updateCatatHarian(Request $request, $blok_id, $catat_harian_id){
         try {
             $blok = BlokLahan::findOrFail($blok_id);                       
-            $catat_harian = CatatHarian::findOrFail($catat_harian_id)->update([
+            $catat_harian = CatatHarian::findOrFail($catat_harian_id);
+            $catat_harian->update([
                 'catatan' => $request->input('catatan')
             ]);
 
             return response()->json([
                 "message" => "successfully update catat harian with id {$catat_harian_id} for blok {$blok->id}",
-                "success" => true,
+                "success" => true
             ], 200);
 
         } catch (Exception $e) {

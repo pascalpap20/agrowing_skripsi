@@ -20,10 +20,18 @@ class CreateDistrictsTables extends Migration
      */
     public function up()
     {
-        Schema::create('districts', function(Blueprint $table){
-            $table->char('id', 7)->index();
-            $table->char('regency_id', 4);
-            $table->string('name', 50);
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+
+        Schema::create('districts', function(Blueprint $table) use ($driver){
+            if($driver === 'sqlite'){
+                $table->id()->default('');
+                $table->char('regency_id', 4)->default('');
+                $table->string('name', 50)->default('');
+            } else {
+                $table->char('id', 7)->index();
+                $table->char('regency_id', 4);
+                $table->string('name', 50);
+            }
             $table->foreign('regency_id')
                 ->references('id')
                 ->on('regencies')

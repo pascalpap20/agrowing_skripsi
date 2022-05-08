@@ -28,7 +28,7 @@ class ChangeTahapanToBlokLahan extends Migration
             if($driver !== 'sqlite'){
                 $table->dropForeign(['tahapan_sop_id']);
                 $table->dropColumn(['tahapan_sop_id']);
-            }
+            } 
         });
     }
 

@@ -167,7 +167,7 @@ class ProjectTanamController extends Controller
             return response()->json([
                 "message" => "successfully added new blok lahan to project tanam id {$project_id}",
                 "status" => true
-            ], 201);
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 "message" => $e->getMessage(),
@@ -184,7 +184,7 @@ class ProjectTanamController extends Controller
             return response()->json([
                 "message" => "successfully delete blok lahan from project tanam id {$project_id}",
                 "status" => true
-            ], 201);
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 "message" => $e->getMessage(),

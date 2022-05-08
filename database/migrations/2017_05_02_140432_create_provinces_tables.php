@@ -20,9 +20,16 @@ class CreateProvincesTables extends Migration
      */
     public function up()
     {
-        Schema::create('provinces', function(Blueprint $table){
-            $table->char('id', 2)->index();
-            $table->string('name');
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+
+        Schema::create('provinces', function(Blueprint $table) use($driver){
+            if($driver === 'sqlite'){
+                $table->id()->default('');
+                $table->string('name')->default('');
+            } else {
+                $table->char('id', 2)->index();
+                $table->string('name');
+            }
         });
     }
 

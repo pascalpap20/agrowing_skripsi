@@ -346,4 +346,50 @@ class KegiatanTest extends TestCase
         $response = $this->delete('api/v1/kegiatan/' . $kegiatan->id . '/indikator/' . '1000000')
                     ->assertStatus(400);
     }
+
+    public function test_get_kegiatan_with_indikator_for_sop()
+    {
+        $kegiatan = $this->sop->itemPekerjaan()->create([   
+            'nama_kegiatan' => 'Penyiapan bibit 1',
+            'durasi_waktu' => '1 hok',
+            'tahapan_sop_id' => $this->tahapan->id
+        ]);
+
+        $indikator = $kegiatan->indikatorKegiatan()->create([
+            'nama_indikator' => 'Tambah indikator 1',
+            'tipe_jawaban_id' => 1
+        ]);
+
+        $response = $this->get('api/v1/sop/' . $this->sop->id . '/kegiatan')
+                    ->assertStatus(200);
+    }
+
+    public function test_get_kegiatan_with_indikator_for_sop_error_not_found()
+    {
+        $response = $this->get('api/v1/sop/' . "100000" . '/kegiatan')
+                    ->assertStatus(400);
+    }
+
+    public function test_get_kegiatan_id_with_indikator_for_sop()
+    {
+        $kegiatan = $this->sop->itemPekerjaan()->create([   
+            'nama_kegiatan' => 'Penyiapan bibit 1',
+            'durasi_waktu' => '1 hok',
+            'tahapan_sop_id' => $this->tahapan->id
+        ]);
+
+        $indikator = $kegiatan->indikatorKegiatan()->create([
+            'nama_indikator' => 'Tambah indikator 1',
+            'tipe_jawaban_id' => 1
+        ]);
+
+        $response = $this->get('api/v1/sop/' . $this->sop->id . '/kegiatan/' . $kegiatan->id)
+                    ->assertStatus(200);
+    }
+
+    public function test_get_kegiatan_id_with_indikator_for_sop_error_not_found()
+    {
+        $response = $this->get('api/v1/sop/' . $this->sop->id . '/kegiatan/' . "100000")
+                    ->assertStatus(400);
+    }
 }

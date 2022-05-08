@@ -14,16 +14,24 @@ class ChangeTableCatatItem extends Migration
     public function up()
     {
         $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
-        Schema::table('catat_item', function (Blueprint $table) use ($driver) {
-            //
-            $table->dropColumn('item_pekerjaan');
-            if ($driver === 'sqlite'){
-                $table->unsignedBigInteger('item_pekerjaan_id')->default('');
-            } else {
-                $table->unsignedBigInteger('item_pekerjaan_id');
-            }
-            $table->foreign('item_pekerjaan_id')->references('id')->on('item_pekerjaan')->onDelete('cascade');
-        });
+        if($driver == 'sqlite'){
+            DB::statement("ALTER TABLE catat_item ADD COLUMN 'item_pekerjaan_id' integer;");
+            Schema::table('catat_item', function (Blueprint $table) use ($driver) {
+                //
+                $table->dropColumn('item_pekerjaan');
+            });
+        } else {
+            Schema::table('catat_item', function (Blueprint $table) use ($driver) {
+                //
+                $table->dropColumn('item_pekerjaan');
+                if ($driver === 'sqlite'){
+                    $table->unsignedBigInteger('item_pekerjaan_id')->default('');
+                } else {
+                    $table->unsignedBigInteger('item_pekerjaan_id');
+                }
+                $table->foreign('item_pekerjaan_id')->references('id')->on('item_pekerjaan')->onDelete('cascade');
+            });
+        }
     }
 
     /**

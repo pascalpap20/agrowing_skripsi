@@ -13,10 +13,12 @@ class AddTahapanSopIdRef2 extends Migration
      */
     public function up()
     {
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+
         Schema::table('project_tanam', function (Blueprint $table) {
             //
-            $table->unsignedBigInteger('tahapan_sop_id')->change();
-            $table->foreign('tahapan_sop_id')->references('id')->on('tahapan')->onDelete('cascade');
+                $table->unsignedBigInteger('tahapan_sop_id')->change();
+                $table->foreign('tahapan_sop_id')->references('id')->on('tahapan')->onDelete('cascade');
         });
     }
 

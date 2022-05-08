@@ -20,10 +20,18 @@ class CreateRegenciesTables extends Migration
      */
     public function up()
     {
-        Schema::create('regencies', function(Blueprint $table){
-            $table->char('id', 4)->index();
-            $table->char('province_id', 2);
-            $table->string('name', 50);
+        $driver = Schema::connection($this->getConnection())->getConnection()->getDriverName();
+
+        Schema::create('regencies', function(Blueprint $table) use($driver) {
+            if($driver === 'sqlite'){
+                $table->id()->default('');
+                $table->char('province_id', 2)->default('');
+                $table->string('name', 50)->default('');
+            } else {
+                $table->char('id', 4)->index();
+                $table->char('province_id', 2);
+                $table->string('name', 50);
+            }
             $table->foreign('province_id')
                 ->references('id')
                 ->on('provinces')

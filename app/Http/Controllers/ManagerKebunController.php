@@ -68,8 +68,8 @@ class ManagerKebunController extends Controller
         return response()->json(
             [
                 "message" => "success create project tanam",
-                "status" => 200,
-            ]
+                "success" => true,
+            ], 201
         );
     }
 
