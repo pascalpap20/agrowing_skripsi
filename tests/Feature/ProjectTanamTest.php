@@ -425,6 +425,82 @@ class ProjectTanamTest extends TestCase
                     ->assertStatus(201);
     }   
 
+    public function test_create_catatan_harian_with_panen()
+    {
+        $this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $response = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json)
+                    ->assertStatus(201);
+    }
+
     public function test_create_catatan_harian_error_formData()
     {
         $this->withoutExceptionHandling(); 
@@ -670,5 +746,1298 @@ class ProjectTanamTest extends TestCase
 
         $response = $this->delete('/api/v1/blok/' . $blok_lahan->id . '/catat/' . "100000")
                     ->assertStatus(400);
+    }
+
+    public function test_get_catat_harian()
+    {
+        $this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+
+        $catatan = $blok_lahan->catatHarian()->create([
+            "tahapan_id" => 2,
+            "catatan" => "Another two",
+            "panen" => false,
+        ]);
+
+        $response = $this->put('/api/v1/blok/' . $blok_lahan->id . '/catat/' . $catatan->id, [
+                        "catatan" => "update nih"
+                    ])->assertStatus(200);$this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+
+        $catatan = $blok_lahan->catatHarian()->create([
+            "tahapan_id" => 2,
+            "catatan" => "Another two",
+            "panen" => false,
+        ]);
+
+        $response = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat/')
+                    ->assertStatus(200);
+    }
+
+    public function test_get_catat_harian_error_not_found()
+    {
+        $this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+
+        $catatan = $blok_lahan->catatHarian()->create([
+            "tahapan_id" => 2,
+            "catatan" => "Another two",
+            "panen" => false,
+        ]);
+
+        $response = $this->put('/api/v1/blok/' . $blok_lahan->id . '/catat/' . $catatan->id, [
+                        "catatan" => "update nih"
+                    ])->assertStatus(200);$this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+
+        $catatan = $blok_lahan->catatHarian()->create([
+            "tahapan_id" => 2,
+            "catatan" => "Another two",
+            "panen" => false,
+        ]);
+
+        $response = $this->get('/api/v1/blok/' . "10000" . '/catat/')
+                    ->assertStatus(400);
+    }
+
+    public function test_get_catat_harian_by_catat_id()
+    {
+        $this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+
+        $catatan = $blok_lahan->catatHarian()->create([
+            "tahapan_id" => 2,
+            "catatan" => "Another two",
+            "panen" => false,
+        ]);
+
+        $response = $this->put('/api/v1/blok/' . $blok_lahan->id . '/catat/' . $catatan->id, [
+                        "catatan" => "update nih"
+                    ])->assertStatus(200);$this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+
+        $catatan = $blok_lahan->catatHarian()->create([
+            "tahapan_id" => 2,
+            "catatan" => "Another two",
+            "panen" => false,
+        ]);
+
+        $response = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat/' . $catatan->id)
+                    ->assertStatus(200);
+    }
+
+    public function test_get_catat_harian_by_catat_id_error_not_found()
+    {
+        $this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+
+        $catatan = $blok_lahan->catatHarian()->create([
+            "tahapan_id" => 2,
+            "catatan" => "Another two",
+            "panen" => false,
+        ]);
+
+        $response = $this->put('/api/v1/blok/' . $blok_lahan->id . '/catat/' . $catatan->id, [
+                        "catatan" => "update nih"
+                    ])->assertStatus(200);$this->withoutExceptionHandling(); 
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+
+        $catatan = $blok_lahan->catatHarian()->create([
+            "tahapan_id" => 2,
+            "catatan" => "Another two",
+            "panen" => false,
+        ]);
+
+        $response = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat/' . "10000")
+                    ->assertStatus(400);
+    }
+
+    public function test_get_notifikasi()
+    {
+        $response = $this->get('/api/v1/notifikasi')
+                    ->assertStatus(200);
+    }
+
+    public function test_create_catat_item()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        $formData = '{
+            "filled": 1,
+            "item_pekerjaan_id": 2,
+            "indikator": [
+                {
+                    "indikator_id": 3,
+                    "catat_jawaban": "3000"
+                }
+            ]
+        }';
+
+        $json = json_decode($formData, true);
+        $response = $this->post('/api/v1/catat/' . '1' . '/item/create', $json)
+                    ->assertStatus(200);
+    }
+
+    public function test_create_catat_item_error_formData()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        // indikator id not belong to item_pekerjaan_id
+        $formData = '{
+            "filled": 1,
+            "item_pekerjaan_id": 2,
+            "indikator": [
+                {
+                    "indikator_id": 1,
+                    "catat_jawaban": "3000"
+                }
+            ]
+        }';
+
+        $json = json_decode($formData, true);
+        $response = $this->post('/api/v1/catat/' . '1' . '/item/create', $json)
+                    ->assertStatus(400);
+    }
+
+    public function test_create_catat_item_error_not_found()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        // indikator id not belong to item_pekerjaan_id
+        $formData = '{
+            "filled": 1,
+            "item_pekerjaan_id": 2,
+            "indikator": [
+                {
+                    "indikator_id": 1,
+                    "catat_jawaban": "3000"
+                }
+            ]
+        }';
+
+        $json = json_decode($formData, true);
+        $response = $this->post('/api/v1/catat/' . '100000' . '/item/create', $json)
+                    ->assertStatus(400);
+    }
+
+    public function test_update_catat_item()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        $formData = '{
+            "filled": 1
+        }';
+
+        $json = json_decode($formData, true);
+        $response = $this->put('/api/v1/catat/' . '1' . '/item/' . '1', $json)
+                    ->assertStatus(200);
+    }
+
+    public function test_update_catat_item_error_formData()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        // formdata not valid
+        $formData = '{
+        }';
+
+        $json = json_decode($formData, true);
+        $response = $this->put('/api/v1/catat/' . '1' . '/item/' . '1', $json)
+                    ->assertStatus(400);
+    }
+
+    public function test_update_catat_item_error_not_found()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        $formData = '{
+            "filled": 1
+        }';
+
+        $json = json_decode($formData, true);
+        $response = $this->put('/api/v1/catat/' . '1' . '/item/' . '1000000', $json)
+                    ->assertStatus(400);
+    }
+
+    public function test_delete_catat_item()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        $response = $this->delete('/api/v1/catat/' . '1' . '/item/' . '1')
+                    ->assertStatus(200);
+    }
+
+    public function test_delete_catat_item_error_not_found()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        $response = $this->delete('/api/v1/catat/' . '1' . '/item/' . '10000')
+                    ->assertStatus(400);
+    }
+
+    public function test_update_catat_indikator()
+    {
+
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        $response = $this->put('/api/v1/item/'. '1' . '/indikator/' .'1', [
+                "catat_jawaban" => "110"
+            ])->assertStatus(200);
+    }
+
+    public function test_update_catat_indikator_error_formData()
+    {
+
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        $response = $this->put('/api/v1/item/'. '1' . '/indikator/' .'1', [
+            ])->assertStatus(400);
+    }
+
+    public function test_update_catat_indikator_error_not_found()
+    {
+
+        $this->withoutExceptionHandling();
+
+        $this->actingAs($this->userAdmin, 'api');
+        // dependency tahapan (di sop), blok id
+
+        // create sop
+        $path = storage_path('app/sop.json');
+        $formData = json_decode(file_get_contents($path), true);
+        $sop = $this->post('api/v1/sop', $formData)->decodeResponseJson();
+        $sop_data = json_decode($sop->json)->data;
+        // dd($sop_data);
+        
+        // find sop tahapan id
+        $sop_tahapan = $this->get('api/v1/sop/' . $sop_data->id .'/tahapan')->decodeResponseJson();
+        // dd($sop_tahapan);
+
+        $this->actingAs($this->userManager, 'api');
+        $project_tanam = $this->manager->projectTanam()->create([
+            "alamat_id" => $this->alamat->id,
+            "manager_kebun_id" => $this->userManager->id ,
+            "sop_id" => $sop_data->id 
+        ]);
+
+        $blok_lahan = $project_tanam->blokLahan()->create([
+            "luas_blok" => 10000,
+            "jumlah_tanaman" => 100,
+            "umur_tanaman" => 1,
+            "periode" => 1 
+        ]);
+        // dd($blok_lahan->id);
+        $formData = '{
+            "tahapan_id": 2,
+            "catatan": "Another two",
+            "panen": true,
+            "panen_aktual": 10,
+            "panen_gradeA": 6,
+            "panen_gradeB": 4,
+            "kegiatan": [
+                {
+                    "item_pekerjaan_id": 1,
+                    "filled": 1,
+                    "indikator": [
+                        {
+                            "indikator_id": 1,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 2,
+                            "catat_jawaban": "202" 
+                        }
+                    ]
+                },
+                {
+                    "item_pekerjaan_id": 2,
+                    "filled": 0,
+                    "indikator": [
+                        {
+                            "indikator_id": 3,
+                            "catat_jawaban": "100" 
+                        },
+                        {
+                            "indikator_id": 4,
+                            "catat_jawaban": "302" 
+                        }
+                    ]
+                }
+            ]
+        }';
+        
+        $json = json_decode($formData, true);
+        $create_catatan = $this->post('/api/v1/blok/' . $blok_lahan->id . '/catat/create', $json);
+        
+        // find catatan id available
+        $get_catatan = $this->get('/api/v1/blok/' . $blok_lahan->id . '/catat')->decodeResponseJson();
+        // dd($get_catatan->json());
+
+        $response = $this->put('/api/v1/item/'. '1' . '/indikator/' .'10000', [
+            ])->assertStatus(400);
     }
 }
