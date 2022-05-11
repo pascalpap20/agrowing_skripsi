@@ -35,7 +35,8 @@ class KomoditasController extends Controller
             
             $fileName = null;
             if($request->file('foto')){
-                $fileName = $request->file('foto')->store('komoditas');
+                $path = $request->file('foto')->store('komoditas', 's3');
+                $fileName = Storage::disk('s3')->url($path);
             }
             $komoditas = $admin->komoditas()->firstOrCreate([
                 'nama_komoditas' => $request->input('nama_komoditas'),
@@ -79,9 +80,10 @@ class KomoditasController extends Controller
                 $fileName = null;
                 if($request->file('foto')){
                     if($updatedKomoditas["foto"]){
-                        Storage::delete($updatedKomoditas["foto"]);
+                        Storage::disk('s3')->delete('komoditas/' . basename($updatedKomoditas["foto"]));
                     }
-                    $fileName = $request->file('foto')->store('komoditas');
+                    $path = $request->file('foto')->store('komoditas', 's3');
+                    $fileName = Storage::disk('s3')->url($path);
                 }
 
                 $updatedKomoditas->update([
@@ -115,7 +117,7 @@ class KomoditasController extends Controller
 
                 $komoditas = JenisKomoditas::findOrFail($komoditas_id);
                 if($komoditas["foto"]){
-                    Storage::delete($komoditas["foto"]);
+                    Storage::disk('s3')->delete('komoditas/'. basename($komoditas["foto"]));
                 }
                 $komoditas->delete();
                 
