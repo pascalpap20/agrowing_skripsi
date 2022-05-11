@@ -110,4 +110,4 @@ Route::get('/sop/{sop_id}/kegiatan/{kegiatan_id}', 'ItemPekerjaanController@getK
 Route::get('/blok/{blok_id}/catat', 'PencatatanController@getCatatanHarian');
 Route::get('/blok/{blok_id}/catat/{catat_harian_id}', 'PencatatanController@getCatatanHarianById');
 
-Route::get('/ucup', 'SopController@testing');
+Route::get('/alamat', 'AlamatController@showAvailableAddress');
