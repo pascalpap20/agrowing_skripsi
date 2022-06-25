@@ -28,7 +28,8 @@ class TahapanController extends Controller
 
                 return response()->json([
                     "message" => "new tahapan successfully added on sop id {$sop_id}",
-                    "success" => true
+                    "success" => true,
+                    "data" => $tahapan
                 ], 201);
             } catch (Exception $e) {
                 return response()->json([
